@@ -1,6 +1,7 @@
 "use client"
 
-import { Camera, Home, Settings, User, Users, Webcam } from "lucide-react"
+import { Camera, Home, Settings, User, Users, Webcam, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
 import {
   Sidebar,
   SidebarContent,
@@ -38,6 +39,17 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  };
   
   return (
     <Sidebar collapsible="icon">
@@ -108,6 +120,12 @@ export function AppSidebar() {
                   <span className="truncate text-xs">user@example.com</span>
                 </div>
               </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" onClick={handleLogout} tooltip="Sair">
+              <LogOut className="size-4" />
+              <span>Sair</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
