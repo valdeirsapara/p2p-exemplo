@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const authCredentials = getAuthCredentials();
 
     // Compara com as credenciais do .env
-    if (username === authCredentials.USERNAME && password === authCredentials.PASSWORD) {
+    if (username === process.env.USERNAME && password === process.env.PASSWORD) {
       // Cria um cookie de autenticação
       const cookieStore = await cookies();
       cookieStore.set("auth_token", "authenticated", {
