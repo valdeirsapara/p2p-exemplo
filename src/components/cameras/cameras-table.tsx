@@ -275,7 +275,7 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => handleDeleteCamera(camera.id, camera.nome)}
+                          onClick={() => handleDeleteClick(camera.id, camera.nome)}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="size-4" />

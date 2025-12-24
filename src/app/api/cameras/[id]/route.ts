@@ -3,11 +3,11 @@ import { cameras } from "@/lib/recapi-client";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    await cameras.delete(id);
+    const { id } = await params;
+    await cameras.delete(parseInt(id));
     return NextResponse.json({ success: true }, { status: 204 });
   } catch (error: any) {
     console.error("Erro ao deletar câmera:", error);
