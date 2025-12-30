@@ -30,7 +30,7 @@ export class RecApiClient {
   /**
    * Obtém uma câmera pelo ID
    */
-  async getCameraById(id: number): Promise<Camera> {
+  async getCameraById(id: string): Promise<Camera> {
     const response = await recapi.get<Camera>(`/camera/${id}/`);
     return response.data;
   }
@@ -152,7 +152,7 @@ export const recApiClient = new RecApiClient();
 // Exportações individuais para uso direto
 export const cameras = {
   list: (params?: CameraListParams) => recApiClient.listCameras(params),
-  getById: (id: number) => recApiClient.getCameraById(id),
+  getById: (id: string) => recApiClient.getCameraById(id),
   getBySerial: (serial: string) => recApiClient.getCameraBySerial(serial),
   create: (data: CameraCreateRequest) => recApiClient.createCamera(data),
   update: (id: number, data: CameraUpdateRequest) => recApiClient.updateCamera(id, data),

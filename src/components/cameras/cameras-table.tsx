@@ -17,9 +17,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, X, Trash2 } from "lucide-react";
+import { Search, X, Trash2, PlayCircle } from "lucide-react";
 import { DeleteConfirmDialog } from "../delete-confirm-dialog";
 import { ErrorAlertDialog } from "../error-alert-dialog";
+import PreviewCameraDialog from "../dialogs/prevew-camera-dialog";
+import { ca } from "zod/v4/locales";
 
 interface CamerasTableProps {
   refreshKey?: number;
@@ -32,6 +34,11 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<CameraListParams>({});
   const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    id: number | null;
+    nome: string;
+  }>({ open: false, id: null, nome: "" });
+  const [previewDialog, setPreviewDialog] = useState<{
     open: boolean;
     id: number | null;
     nome: string;
@@ -100,6 +107,10 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
   const handleDeleteClick = (id: number, nome: string) => {
     setDeleteDialog({ open: true, id, nome });
   };
+  const handlePreviewClick = (id: number, nome: string) => {
+    setPreviewDialog({ open: true, id, nome });
+  };
+
 
   const handleDeleteConfirm = async () => {
     if (!deleteDialog.id) return;
@@ -264,14 +275,42 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
                         {clientesList.find((c) => c.id === camera.cliente)?.nome || "-"}
                       </TableCell>
                       <TableCell>
-                        {camera.streaming_status ? (
-                          <span className="text-green-600">Ativo</span>
-                        ) : (
-                          <span className="text-muted-foreground">Inativo</span>
-                        )}
+                        {(() => {
+                          const status = camera.streaming_status?.status;
+                          let label = "Inativo";
+                          let colorClass = "text-muted-foreground";
+                          switch (status) {
+                            case "rodando":
+                              label = "Rodando";
+                              colorClass = "text-green-600";
+                              break;
+                            case "parado":
+                              label = "Parado";
+                              colorClass = "text-yellow-500";
+                              break;
+                            case "erro":
+                              label = "Erro";
+                              colorClass = "text-red-600";
+                              break;
+                            case "iniciando":
+                              label = "Iniciando";
+                              colorClass = "text-blue-600";
+                              break;
+                            default:
+                              label = "Inativo";
+                              colorClass = "text-muted-foreground";
+                          }
+                          return <span className={colorClass}>{label}</span>;
+                        })()}
                       </TableCell>
                       <TableCell>{formatDate(camera.criado_em)}</TableCell>
                       <TableCell>
+                        <PreviewCameraDialog 
+                        cameraId={camera.id} 
+                        streaming_url={`${process.env.NEXT_PUBLIC_RECAPI_URL}${camera.streaming_url}`}
+                        streaming_status={camera.streaming_status?.status}
+                        serial={camera.serial}
+                        disabled={!camera.status}/>
                         <Button
                           variant="ghost"
                           size="icon-sm"

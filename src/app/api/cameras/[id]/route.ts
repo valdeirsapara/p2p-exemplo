@@ -1,4 +1,6 @@
 import { recapi } from "@/lib/api";
+import { cameras, recApiClient } from "@/lib/recapi-client";
+import { parseVersionInfo } from "next/dist/server/dev/parse-version-info";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
@@ -21,3 +23,8 @@ export async function DELETE(
   }
 }
 
+export async function GET(request:Request,{ params }: { params: Promise<{ id: string }> }){
+  const { id } = await params
+  const response = await cameras.getById(id)
+  return NextResponse.json(response)
+}

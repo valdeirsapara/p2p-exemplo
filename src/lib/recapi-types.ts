@@ -5,7 +5,11 @@
 export interface Camera {
   id: number;
   streaming_url?: string;
-  streaming_status?: string;
+  streaming_status?: {
+    status: string;
+    ultima_verificacao: string;
+    iniciado_em: string;
+  };
   criado_em?: string | null;
   modificado_em?: string | null;
   desativado_em?: string | null;
@@ -15,7 +19,14 @@ export interface Camera {
   modelo?: string | null;
   status: boolean;
   verification_code?: string;
-  custom_fields?: Record<string, unknown> | null;
+  custom_fields?: {
+    isSubscribed?: boolean;
+    deviceVersion?: string;
+    deviceCategory?: number;
+    deviceShareFlag?: boolean;
+    deviceSubCategory?: number;
+    [key: string]: unknown;
+  } | null;
   criado_por?: number | null;
   modificado_por?: number | null;
   desativado_por?: number | null;
