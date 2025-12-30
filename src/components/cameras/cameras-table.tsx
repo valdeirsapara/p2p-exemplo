@@ -307,7 +307,7 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
                       <TableCell>
                         <PreviewCameraDialog 
                         cameraId={camera.id} 
-                        streaming_url={`${process.env.NEXT_PUBLIC_RECAPI_URL}${camera.streaming_url}`}
+                        streaming_url={`${camera.streaming_url}`}
                         streaming_status={camera.streaming_status?.status}
                         serial={camera.serial}
                         disabled={!camera.status}/>
