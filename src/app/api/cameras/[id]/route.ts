@@ -1,5 +1,5 @@
+import { recapi } from "@/lib/api";
 import { NextResponse } from "next/server";
-import { cameras } from "@/lib/recapi-client";
 
 export async function DELETE(
   request: Request,
@@ -7,8 +7,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await cameras.delete(parseInt(id));
-    return NextResponse.json({ success: true }, { status: 204 });
+    const response = await recapi.delete(`/camera/${id}`)
+    console.log(response)
+    if (response.status == 204) {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
   } catch (error: any) {
     console.error("Erro ao deletar câmera:", error);
     return NextResponse.json(

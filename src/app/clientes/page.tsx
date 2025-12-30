@@ -79,8 +79,10 @@ export default function ClientesPage() {
     if (!deleteDialog.id) return;
 
     try {
-      await api.delete(`/api/clientes/${deleteDialog.id}`);
-      fetchClientes();
+      const response = await api.delete(`/api/clientes/${deleteDialog.id}`);
+      if (response.status == 200){
+        fetchClientes();
+      }
     } catch (err: any) {
       setErrorDialog({
         open: true,

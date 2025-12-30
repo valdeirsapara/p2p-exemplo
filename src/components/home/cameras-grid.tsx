@@ -22,7 +22,11 @@ export function CamerasGrid({ refreshKey }: CamerasGridProps) {
             try {
                 setLoading(true);
                 setError(null);
-                const response = await api.get("/api/cameras");
+                const response = await api.get("/api/cameras",{
+                    params:{
+                        status:true
+                    }
+                });
                 setCameras(response.data);
             } catch (err: any) {
                 if (err.response?.status === 401) {

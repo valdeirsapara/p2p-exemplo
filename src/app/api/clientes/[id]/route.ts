@@ -8,7 +8,7 @@ export async function DELETE(
   try {
     const { id } = await params;
     await clientes.delete(parseInt(id));
-    return NextResponse.json({ success: true }, { status: 204 });
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: any) {
     console.error("Erro ao deletar cliente:", error);
     return NextResponse.json(
