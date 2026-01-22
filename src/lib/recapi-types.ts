@@ -4,12 +4,7 @@
 
 export interface Camera {
   id: number;
-  streaming_url?: string;
-  streaming_status?: {
-    status: string;
-    ultima_verificacao: string;
-    iniciado_em: string;
-  };
+  is_stream_expired?: boolean;
   criado_em?: string | null;
   modificado_em?: string | null;
   desativado_em?: string | null;
@@ -27,16 +22,19 @@ export interface Camera {
     deviceSubCategory?: number;
     [key: string]: unknown;
   } | null;
+  stream_url?: string | null;
+  stream_id?: string | null;
+  stream_expire_at?: string | null;
   criado_por?: number | null;
   modificado_por?: number | null;
   desativado_por?: number | null;
-  cliente: number;
+  cliente?: number | null;
 }
 
 export interface Cliente {
   id: number;
   nome: string;
-  service_provider?: "hikvision";
+  service_provider?: "hikconnect";
   custom_fields?: Record<string, unknown> | null;
   criado_por?: number | null;
   criado_em?: string | null;
@@ -45,36 +43,54 @@ export interface Cliente {
 }
 
 export interface CameraCreateRequest {
+  nome: string;
   serial: string;
   cliente_id: number;
   validade_code: string;
-  extended_info?: string;
+  userName?: string;
+  password?: string;
+  streamSecretKey?: string;
+  timeZoneId?: number;
 }
 
 export interface CameraUpdateRequest {
-  serial?: string;
-  nome?: string;
-  modelo?: string;
-  status?: boolean;
-  verification_code?: string;
-  custom_fields?: Record<string, unknown> | null;
-  criado_por?: number | null;
-  desativado_por?: number | null;
-  cliente?: number;
+  nome: string;
+  userName?: string;
+  password?: string;
+  timeZoneId?: number;
 }
 
 export interface ClienteCreateRequest {
   nome: string;
-  service_provider?: "hikvision";
+  service_provider?: "hikconnect";
   custom_fields?: Record<string, unknown> | null;
   criado_por?: number | null;
 }
 
 export interface ClienteUpdateRequest {
   nome?: string;
-  service_provider?: "hikvision";
+  service_provider?: "hikconnect";
   custom_fields?: Record<string, unknown> | null;
   modificado_por?: number | null;
+}
+
+export interface RefreshStreamRequest {
+  async?: boolean;
+  protocol?: number; // 1=EZOPEN, 2=HLS, 3=RTMP (default)
+  quality?: string; // '1' (alta) ou '2' (baixa, default)
+  expireTime?: number; // Tempo em segundos (default: 86400 = 24h)
+}
+
+export interface RefreshStreamResponse {
+  camera_id: number;
+  stream_url: string;
+  stream_id: string;
+  expire_at: string;
+}
+
+export interface RefreshStreamAsyncResponse {
+  message: string;
+  task_id: string;
 }
 
 export interface CameraListParams {

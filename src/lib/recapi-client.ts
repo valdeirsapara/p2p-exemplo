@@ -15,7 +15,9 @@ import type {
   ClienteListParams,
   StreamListResponse,
   CameraChannelsResponse,
-  ApiError,
+  RefreshStreamRequest,
+  RefreshStreamResponse,
+  RefreshStreamAsyncResponse,
 } from "./recapi-types";
 
 export class RecApiClient {
@@ -79,6 +81,17 @@ export class RecApiClient {
    */
   async getCameraChannels(cameraId: number): Promise<CameraChannelsResponse> {
     const response = await recapi.get<CameraChannelsResponse>(`/camera/${cameraId}/channels/`);
+    return response.data;
+  }
+
+  /**
+   * Atualiza/renova a URL de streaming RTMP da câmera
+   */
+  async refreshStream(cameraId: number, data?: RefreshStreamRequest): Promise<RefreshStreamResponse | RefreshStreamAsyncResponse> {
+    const response = await recapi.post<RefreshStreamResponse | RefreshStreamAsyncResponse>(
+      `/camera/${cameraId}/refresh-stream/`,
+      data || {}
+    );
     return response.data;
   }
 
@@ -159,6 +172,7 @@ export const cameras = {
   patch: (id: number, data: Partial<CameraUpdateRequest>) => recApiClient.patchCamera(id, data),
   delete: (id: number) => recApiClient.deleteCamera(id),
   getChannels: (cameraId: number) => recApiClient.getCameraChannels(cameraId),
+  refreshStream: (cameraId: number, data?: RefreshStreamRequest) => recApiClient.refreshStream(cameraId, data),
 };
 
 export const clientes = {

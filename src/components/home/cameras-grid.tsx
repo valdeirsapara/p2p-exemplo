@@ -72,9 +72,7 @@ export function CamerasGrid({ refreshKey }: CamerasGridProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {cameras.map((camera) => {
-                const streamUrl = camera.streaming_url 
-                    ? `${camera.streaming_url}`
-                    : null;
+                const streamUrl = camera.stream_url || null;
 
                 return (
                     <Card key={camera.id || camera.slug || camera.serial}>

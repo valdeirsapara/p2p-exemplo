@@ -48,6 +48,7 @@ export function CreateCameraDialog({ onSuccess }: CreateCameraDialogProps) {
 
     try {
       await api.post("/api/cameras", {
+        nome: formData.serial,
         serial: formData.serial,
         cliente_id: parseInt(formData.cliente_id),
         validade_code: formData.validade_code,

@@ -17,11 +17,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, X, Trash2, PlayCircle } from "lucide-react";
+import { Search, X, Trash2, RefreshCw, AlertCircle } from "lucide-react";
 import { DeleteConfirmDialog } from "../delete-confirm-dialog";
 import { ErrorAlertDialog } from "../error-alert-dialog";
 import PreviewCameraDialog from "../dialogs/prevew-camera-dialog";
-import { ca } from "zod/v4/locales";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CamerasTableProps {
   refreshKey?: number;
@@ -44,6 +49,7 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
     nome: string;
   }>({ open: false, id: null, nome: "" });
   const [errorDialog, setErrorDialog] = useState({ open: false, message: "" });
+  const [refreshingStream, setRefreshingStream] = useState<number | null>(null);
 
   const fetchCameras = async (filterParams: CameraListParams = filters) => {
     try {
@@ -124,6 +130,22 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
         message: err.response?.data?.error || "Erro ao deletar câmera",
       });
       console.error(err);
+    }
+  };
+
+  const handleRefreshStream = async (cameraId: number) => {
+    setRefreshingStream(cameraId);
+    try {
+      await api.post(`/api/cameras/${cameraId}/refresh-stream`);
+      fetchCameras(filters);
+    } catch (err: any) {
+      setErrorDialog({
+        open: true,
+        message: err.response?.data?.error || "Erro ao atualizar stream",
+      });
+      console.error(err);
+    } finally {
+      setRefreshingStream(null);
     }
   };
 
@@ -251,9 +273,9 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
                   <TableHead>Modelo</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Streaming Status</TableHead>
+                  <TableHead>Stream</TableHead>
                   <TableHead>Criado em</TableHead>
-                  <TableHead className="w-[100px]">Ações</TableHead>
+                  <TableHead className="w-35">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -276,50 +298,63 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
                       </TableCell>
                       <TableCell>
                         {(() => {
-                          const status = camera.streaming_status?.status;
-                          let label = "Inativo";
-                          let colorClass = "text-muted-foreground";
-                          switch (status) {
-                            case "rodando":
-                              label = "Rodando";
-                              colorClass = "text-green-600";
-                              break;
-                            case "parado":
-                              label = "Parado";
-                              colorClass = "text-yellow-500";
-                              break;
-                            case "erro":
-                              label = "Erro";
-                              colorClass = "text-red-600";
-                              break;
-                            case "iniciando":
-                              label = "Iniciando";
-                              colorClass = "text-blue-600";
-                              break;
-                            default:
-                              label = "Inativo";
-                              colorClass = "text-muted-foreground";
+                          const hasStream = !!camera.stream_url;
+                          const isExpired = camera.is_stream_expired;
+
+                          if (!hasStream) {
+                            return <span className="text-muted-foreground">Sem stream</span>;
                           }
-                          return <span className={colorClass}>{label}</span>;
+
+                          if (isExpired) {
+                            return (
+                              <span className="inline-flex items-center gap-1 text-yellow-600">
+                                <AlertCircle className="size-3" />
+                                Expirado
+                              </span>
+                            );
+                          }
+
+                          return <span className="text-green-600">Ativo</span>;
                         })()}
                       </TableCell>
                       <TableCell>{formatDate(camera.criado_em)}</TableCell>
                       <TableCell>
-                        <PreviewCameraDialog 
-                        cameraId={camera.id} 
-                        streaming_url={`${camera.streaming_url}`}
-                        streaming_status={camera.streaming_status?.status}
-                        serial={camera.serial}
-                        disabled={!camera.status}/>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleDeleteClick(camera.id, camera.nome)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="size-4" />
-                          <span className="sr-only">Deletar câmera</span>
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <PreviewCameraDialog
+                            cameraId={camera.id}
+                            streaming_url={camera.stream_url || ""}
+                            streaming_status={camera.is_stream_expired ? "expirado" : camera.stream_url ? "ativo" : undefined}
+                            serial={camera.serial}
+                            disabled={!camera.status}
+                          />
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  onClick={() => handleRefreshStream(camera.id)}
+                                  disabled={refreshingStream === camera.id || !camera.status}
+                                >
+                                  <RefreshCw className={`size-4 ${refreshingStream === camera.id ? "animate-spin" : ""}`} />
+                                  <span className="sr-only">Atualizar stream</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Atualizar/Renovar stream</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => handleDeleteClick(camera.id, camera.nome)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="size-4" />
+                            <span className="sr-only">Deletar câmera</span>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
