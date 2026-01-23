@@ -17,10 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, X, Trash2, RefreshCw, AlertCircle } from "lucide-react";
+import { Search, X, Trash2, RefreshCw, AlertCircle, Pencil } from "lucide-react";
 import { DeleteConfirmDialog } from "../delete-confirm-dialog";
 import { ErrorAlertDialog } from "../error-alert-dialog";
 import PreviewCameraDialog from "../dialogs/prevew-camera-dialog";
+import { EditCameraDialog } from "../dialogs/edit-camera-dialog";
+import { RefreshStreamDialog } from "../dialogs/refresh-stream-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -49,7 +51,14 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
     nome: string;
   }>({ open: false, id: null, nome: "" });
   const [errorDialog, setErrorDialog] = useState({ open: false, message: "" });
-  const [refreshingStream, setRefreshingStream] = useState<number | null>(null);
+  const [editDialog, setEditDialog] = useState<{
+    open: boolean;
+    camera: Camera | null;
+  }>({ open: false, camera: null });
+  const [refreshStreamDialog, setRefreshStreamDialog] = useState<{
+    open: boolean;
+    camera: Camera | null;
+  }>({ open: false, camera: null });
 
   const fetchCameras = async (filterParams: CameraListParams = filters) => {
     try {
@@ -133,20 +142,12 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
     }
   };
 
-  const handleRefreshStream = async (cameraId: number) => {
-    setRefreshingStream(cameraId);
-    try {
-      await api.post(`/api/cameras/${cameraId}/refresh-stream`);
-      fetchCameras(filters);
-    } catch (err: any) {
-      setErrorDialog({
-        open: true,
-        message: err.response?.data?.error || "Erro ao atualizar stream",
-      });
-      console.error(err);
-    } finally {
-      setRefreshingStream(null);
-    }
+  const handleEditClick = (camera: Camera) => {
+    setEditDialog({ open: true, camera });
+  };
+
+  const handleRefreshStreamClick = (camera: Camera) => {
+    setRefreshStreamDialog({ open: true, camera });
   };
 
   const formatDate = (dateString?: string | null) => {
@@ -333,10 +334,27 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
                                 <Button
                                   variant="ghost"
                                   size="icon-sm"
-                                  onClick={() => handleRefreshStream(camera.id)}
-                                  disabled={refreshingStream === camera.id || !camera.status}
+                                  onClick={() => handleEditClick(camera)}
                                 >
-                                  <RefreshCw className={`size-4 ${refreshingStream === camera.id ? "animate-spin" : ""}`} />
+                                  <Pencil className="size-4" />
+                                  <span className="sr-only">Editar camera</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Editar camera</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  onClick={() => handleRefreshStreamClick(camera)}
+                                  disabled={!camera.status}
+                                >
+                                  <RefreshCw className="size-4" />
                                   <span className="sr-only">Atualizar stream</span>
                                 </Button>
                               </TooltipTrigger>
@@ -352,7 +370,7 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
                             <Trash2 className="size-4" />
-                            <span className="sr-only">Deletar câmera</span>
+                            <span className="sr-only">Deletar camera</span>
                           </Button>
                         </div>
                       </TableCell>
@@ -379,6 +397,21 @@ export function CamerasTable({ refreshKey }: CamerasTableProps) {
         onOpenChange={(open) => setErrorDialog({ ...errorDialog, open })}
         title="Erro"
         message={errorDialog.message}
+      />
+
+      <EditCameraDialog
+        open={editDialog.open}
+        onOpenChange={(open) => setEditDialog({ ...editDialog, open })}
+        camera={editDialog.camera}
+        clientesList={clientesList}
+        onSuccess={() => fetchCameras(filters)}
+      />
+
+      <RefreshStreamDialog
+        open={refreshStreamDialog.open}
+        onOpenChange={(open) => setRefreshStreamDialog({ ...refreshStreamDialog, open })}
+        camera={refreshStreamDialog.camera}
+        onSuccess={() => fetchCameras(filters)}
       />
     </div>
   );

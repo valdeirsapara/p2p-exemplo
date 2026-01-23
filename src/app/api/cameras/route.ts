@@ -30,8 +30,29 @@ export async function POST(request: Request) {
         return NextResponse.json(newCamera, { status: 201 });
     } catch (error: any) {
         console.error("Erro ao criar câmera:", error);
+        console.error("Resposta da API:", error.response?.data);
+
+        const errorData = error.response?.data;
+        let errorMessage = "Erro ao criar câmera";
+
+        if (errorData) {
+            if (errorData.error) {
+                errorMessage = errorData.error;
+            } else if (errorData.message) {
+                errorMessage = errorData.message;
+            } else if (errorData.detail) {
+                errorMessage = errorData.detail;
+            } else if (typeof errorData === 'object') {
+                // Captura erros de validação (ex: { "nome": ["Este campo é obrigatório"] })
+                const errors = Object.entries(errorData)
+                    .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+                    .join('; ');
+                if (errors) errorMessage = errors;
+            }
+        }
+
         return NextResponse.json(
-            { error: error.response?.data?.message || "Erro ao criar câmera" },
+            { error: errorMessage },
             { status: error.response?.status || 500 }
         );
     }

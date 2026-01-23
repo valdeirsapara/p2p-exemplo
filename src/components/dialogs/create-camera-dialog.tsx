@@ -28,6 +28,7 @@ export function CreateCameraDialog({ onSuccess }: CreateCameraDialogProps) {
   const [clientesList, setClientesList] = useState<Cliente[]>([]);
   const [errorDialog, setErrorDialog] = useState({ open: false, message: "" });
   const [formData, setFormData] = useState({
+    nome: "",
     serial: "",
     cliente_id: "",
     validade_code: "",
@@ -48,7 +49,7 @@ export function CreateCameraDialog({ onSuccess }: CreateCameraDialogProps) {
 
     try {
       await api.post("/api/cameras", {
-        nome: formData.serial,
+        nome: formData.nome,
         serial: formData.serial,
         cliente_id: parseInt(formData.cliente_id),
         validade_code: formData.validade_code,
@@ -56,6 +57,7 @@ export function CreateCameraDialog({ onSuccess }: CreateCameraDialogProps) {
       });
       setOpen(false);
       setFormData({
+        nome: "",
         serial: "",
         cliente_id: "",
         validade_code: "",
@@ -91,6 +93,18 @@ export function CreateCameraDialog({ onSuccess }: CreateCameraDialogProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
+              <Label htmlFor="nome">Nome *</Label>
+              <Input
+                id="nome"
+                value={formData.nome}
+                onChange={(e) =>
+                  setFormData({ ...formData, nome: e.target.value })
+                }
+                placeholder="Nome da camera"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="serial">Serial *</Label>
               <Input
                 id="serial"
@@ -98,7 +112,7 @@ export function CreateCameraDialog({ onSuccess }: CreateCameraDialogProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, serial: e.target.value })
                 }
-                placeholder="Serial da câmera"
+                placeholder="Serial da camera"
                 required
               />
             </div>
