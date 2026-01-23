@@ -3,13 +3,7 @@
 import { PlayCircle } from "lucide-react"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
-import { useEffect } from "react"
-import { api, recapi } from "@/lib/api"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { cameras } from "@/lib/recapi-client"
-import { Camera } from "@/lib/recapi-types"
 import { HLSPlayer } from "../hls-player"
-import { env } from "process"
 
 interface PreviewCameraDialogProps {
     cameraId:number;
@@ -29,14 +23,16 @@ export default function PreviewCameraDialog({cameraId, disabled, streaming_statu
                 <span className="sr-only">Ver video ao vivo</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="w-full">
-                <DialogHeader>
+            <DialogContent className="max-w-[90vw]! w-[90vw] h-[90vh] flex flex-col overflow-hidden">
+                <DialogHeader className="shrink-0">
                     <DialogTitle>{serial}</DialogTitle>
                     <DialogDescription asChild>
                         <div>{streaming_status}</div>
                     </DialogDescription>
                 </DialogHeader>
-                <HLSPlayer src={streaming_url} />
+                <div className="flex-1 min-h-0 overflow-hidden">
+                    <HLSPlayer src={streaming_url} className="w-full h-full object-fill" />
+                </div>
             </DialogContent>
         </Dialog>
     )
